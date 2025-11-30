@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"parse-message/config"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -18,11 +17,11 @@ type consumer struct {
 	reader *kafka.Reader
 }
 
-func New(cfg config.Config) Consumer {
+func New(brokers []string, topic string, groupID string) Consumer {
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: cfg.Kafka.Brokers,
-		Topic:   cfg.Kafka.Topic,
-		GroupID: cfg.Kafka.GroupID,
+		Brokers: brokers,
+		Topic:   topic,
+		GroupID: groupID,
 	})
 
 	return &consumer{

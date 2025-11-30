@@ -10,5 +10,10 @@ prompt:
 kafka:
   brokers:
     - localhost:9092
-  topic: parse-message
-  group-id: parse-message-group
+  topics:
+    parse-message:
+      topic: parse-message
+      group-id: parse-message-group
+    update-message:
+      topic: update-message
+      group-id: update-message-group

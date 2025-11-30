@@ -22,7 +22,11 @@ type Prompt struct {
 }
 
 type Kafka struct {
-	Brokers []string `yaml:"brokers"`
-	Topic   string   `yaml:"topic"`
-	GroupID string   `yaml:"group-id"`
+	Brokers []string               `yaml:"brokers"`
+	Topics  map[string]TopicConfig `yaml:"topics"`
+}
+
+type TopicConfig struct {
+	Topic   string `yaml:"topic"`
+	GroupID string `yaml:"group-id"`
 }

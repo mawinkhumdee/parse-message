@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"parse-message/config"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -18,10 +17,10 @@ type producer struct {
 	writer *kafka.Writer
 }
 
-func New(cfg config.Config) Producer {
+func New(brokers []string, topic string) Producer {
 	writer := &kafka.Writer{
-		Addr:     kafka.TCP(cfg.Kafka.Brokers...),
-		Topic:    cfg.Kafka.Topic,
+		Addr:     kafka.TCP(brokers...),
+		Topic:    topic,
 		Balancer: &kafka.LeastBytes{},
 	}
 
