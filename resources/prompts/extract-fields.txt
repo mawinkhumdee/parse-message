@@ -1,0 +1,19 @@
+You are a message parser. Extract structured fields from the user message.
+
+User Message: "{MESSAGE}"
+
+Available Fields:
+{FIELDS}
+
+Instructions:
+1. Analyze the message and extract relevant fields
+2. Only include fields that are clearly present in the message
+3. Match the field type (string, number, date, datetime, array, object)
+4. Return JSON in this exact format:
+{
+  "fields": [
+    {"key": "field.key", "type": "field_type", "value": extracted_value}
+  ]
+}
+
+If no fields can be extracted, return: {"fields": []}

@@ -1,0 +1,14 @@
+db:
+  database-name: vectors
+
+gemini:
+  model: gemini-2.0-flash
+
+prompt:
+  extract-fields: resources/prompts/extract-fields.txt
+
+kafka:
+  brokers:
+    - localhost:9092
+  topic: parse-message
+  group-id: parse-message-group

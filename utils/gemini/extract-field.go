@@ -2,49 +2,53 @@ package gemini
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"parse-message/model"
+	"strings"
+
+	"github.com/google/generative-ai-go/genai"
 )
 
 func (g *gemini) ExtractFields(ctx context.Context, text string, fields []model.StandardField) ([]model.FieldValue, error) {
-
-	// TODO: Call Gemini API
-	var amount *model.FieldValue
-	if containsThaiBaht(text) {
-		amount = &model.FieldValue{
-			Key:   "expense.amount",
-			Type:  "number",
-			Value: 55.0,
-		}
+	if g.client == nil {
+		return nil, fmt.Errorf("gemini client not initialized")
 	}
 
-	var result []model.FieldValue
-	if amount != nil {
-		result = append(result, *amount)
+	prompt := g.buildPrompt(text, fields)
+
+	genModel := g.client.GenerativeModel(g.config.Gemini.Model)
+	genModel.SetTemperature(0.2)
+	genModel.ResponseMIMEType = "application/json"
+
+	resp, err := genModel.GenerateContent(ctx, genai.Text(prompt))
+	if err != nil {
+		return nil, fmt.Errorf("gemini api call failed: %w", err)
 	}
 
-	return result, nil
-}
-
-func containsThaiBaht(text string) bool {
-	return len(text) > 0 && (contains(text, "บาท") || contains(text, "฿"))
-}
-
-func contains(s, sub string) bool {
-	return stringContains(s, sub)
-}
-
-func stringContains(s, sub string) bool {
-	return len(sub) > 0 && len(s) >= len(sub) && (indexOf(s, sub) >= 0)
-}
-
-func indexOf(s, sub string) int {
-	for i := range s {
-		if len(s)-i < len(sub) {
-			return -1
-		}
-		if s[i:i+len(sub)] == sub {
-			return i
-		}
+	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
+		return []model.FieldValue{}, nil
 	}
-	return -1
+
+	responseText := fmt.Sprintf("%v", resp.Candidates[0].Content.Parts[0])
+
+	var result struct {
+		Fields []model.FieldValue `json:"fields"`
+	}
+
+	if err := json.Unmarshal([]byte(responseText), &result); err != nil {
+		return nil, fmt.Errorf("failed to parse gemini response: %w", err)
+	}
+
+	return result.Fields, nil
+}
+
+func (g *gemini) buildPrompt(text string, fields []model.StandardField) string {
+	fieldsJSON, _ := json.MarshalIndent(fields, "", "  ")
+
+	prompt := g.promptTemplate
+	prompt = strings.ReplaceAll(prompt, "{MESSAGE}", text)
+	prompt = strings.ReplaceAll(prompt, "{FIELDS}", string(fieldsJSON))
+
+	return prompt
 }
