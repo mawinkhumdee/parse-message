@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package message;
+
+option go_package = "parse-message/proto";
+
+service MessageService {
+  rpc InsertMessage (InsertMessageRequest) returns (InsertMessageResponse);
+}
+
+message InsertMessageRequest {
+  string user_id = 1;
+  string content = 2;
+  string source = 3;
+}
+
+message InsertMessageResponse {
+  string id = 1;
+  bool success = 2;
+}
