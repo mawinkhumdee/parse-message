@@ -9,7 +9,7 @@ prompt:
 
 kafka:
   brokers:
-    - localhost:9092
+    - kafka:29092
   topics:
     parse-message:
       topic: parse-message

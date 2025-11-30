@@ -34,9 +34,13 @@ func main() {
 		if err := kafkaClients.UpdateConsumer.Start(ctx, handlers.Update); err != nil {
 			panic(err)
 		}
+	}()
 
+	go func() {
 		if err := kafkaClients.ParseConsumer.Start(ctx, handlers.Parse); err != nil {
 			panic(err)
 		}
 	}()
+
+	select {}
 }
