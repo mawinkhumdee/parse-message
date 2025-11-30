@@ -2,11 +2,14 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"log"
 	"parse-message/model"
 	"time"
 )
 
-func (s *service) ParseMessage(ctx context.Context, message string) (model.ParseResult, error) {
+func (s *service) ParseMessage(ctx context.Context, message model.Message) (model.ParseResult, error) {
 	fields, err := s.db.Standardfield.ListActive(ctx)
 	if err != nil {
 		return model.ParseResult{}, err
@@ -17,7 +20,7 @@ func (s *service) ParseMessage(ctx context.Context, message string) (model.Parse
 		fieldMap[f.Key] = f
 	}
 
-	values, err := s.utils.Gemini.ExtractFields(ctx, message, fields)
+	values, err := s.utils.Gemini.ExtractFields(ctx, message.Content, fields)
 	if err != nil {
 		return model.ParseResult{}, err
 	}
@@ -26,9 +29,30 @@ func (s *service) ParseMessage(ctx context.Context, message string) (model.Parse
 	result := model.ParseResult{
 		Intent:    intent,
 		Fields:    values,
-		RawText:   message,
+		RawText:   message.Content,
+		MessageID: message.ID,
+		UserID:    message.UserID,
 		CreatedAt: time.Now(),
 	}
+
+	insertedID, err := s.db.ParseResult.Insert(ctx, result)
+	if err != nil {
+		return model.ParseResult{}, fmt.Errorf("failed to insert result: %w", err)
+	}
+	result.ID = insertedID
+
+	if message.ID != "" {
+		updateMsg := map[string]string{
+			"id":     message.ID,
+			"status": "success",
+		}
+		if payload, err := json.Marshal(updateMsg); err == nil {
+			if err := s.updateProducer.Produce(ctx, string(payload)); err != nil {
+				log.Printf("Failed to produce update message: %v", err)
+			}
+		}
+	}
+
 	return result, nil
 }
 

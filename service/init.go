@@ -10,23 +10,25 @@ import (
 )
 
 type Service interface {
-	ParseMessage(ctx context.Context, message string) (model.ParseResult, error)
+	ParseMessage(ctx context.Context, message model.Message) (model.ParseResult, error)
 	InsertMessage(ctx context.Context, message model.Message) error
 	UpdateMessage(ctx context.Context, message model.Message) error
 }
 
 type service struct {
-	config   config.Config
-	db       db.DB
-	utils    utils.Utils
-	producer producer.Producer
+	config         config.Config
+	db             db.DB
+	utils          utils.Utils
+	parseProducer  producer.Producer
+	updateProducer producer.Producer
 }
 
-func New(config config.Config, db db.DB, utils utils.Utils, producer producer.Producer) Service {
+func New(config config.Config, db db.DB, utils utils.Utils, parseProducer producer.Producer, updateProducer producer.Producer) Service {
 	return &service{
-		config:   config,
-		db:       db,
-		utils:    utils,
-		producer: producer,
+		config:         config,
+		db:             db,
+		utils:          utils,
+		parseProducer:  parseProducer,
+		updateProducer: updateProducer,
 	}
 }

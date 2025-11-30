@@ -35,6 +35,7 @@ func (c *consumer) Start(ctx context.Context, handler func(ctx context.Context, 
 	for {
 		m, err := c.reader.ReadMessage(ctx)
 		if err != nil {
+			log.Printf("failed to read message for topic %s: %v", c.reader.Config().Topic, err)
 			return fmt.Errorf("failed to read message: %w", err)
 		}
 
@@ -42,8 +43,6 @@ func (c *consumer) Start(ctx context.Context, handler func(ctx context.Context, 
 
 		if err := handler(ctx, string(m.Value)); err != nil {
 			log.Printf("Error handling message: %v", err)
-			// Decide whether to commit or not based on error type
-			// For now, we continue processing
 		}
 	}
 }
