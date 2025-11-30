@@ -16,16 +16,28 @@ Messaging pipeline that ingests raw user text, parses fields with Gemini, stores
 ```bash
 docker compose up -d --build
 ```
-- Services: Kafka (`kafka:9092`), Zookeeper, MongoDB (`mongo:27017`), and the app (`:50051`).
+- Services: Kafka (`kafka:9092`), MongoDB (`mongo:27017`), and the app (`:50051`).
 - Configs are loaded from `resources/config.master.yml` and `resources/config.secret.yml`. Update `gemini.api-key` in `resources/config.secret.yml` as needed.
 
 ## Run locally (without Docker for the app)
-1. Start Kafka, Zookeeper, and MongoDB (e.g., `docker compose up kafka zookeeper mongo`).
+1. Start Kafka and MongoDB (e.g., `docker compose up kafka mongo`).
 2. Ensure `resources/config.master.yml` points to those hosts (defaults already match the compose network).
 3. Run the service:
    ```bash
    go run ./main
    ```
+
+## Seed standard fields
+The seeder expects the Mongo host name `mongo` (same as the compose network).
+
+- Inside Docker network (recommended):
+  ```bash
+  docker compose run --rm app go run ./cmd/seed/main.go
+  ```
+- From your host: point the DB URI to your reachable MongoDB (e.g., `mongodb://vector:secretvector@localhost:27017/?authSource=admin`) in `resources/config.secret.yml` or via env override, then run:
+  ```bash
+  go run ./cmd/seed/main.go
+  ```
 
 ## gRPC usage
 The gRPC server listens on `:50051`.
