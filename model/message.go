@@ -7,5 +7,6 @@ type Message struct {
 	UserID    string
 	Content   string
 	Source    string // "text" | "voice" | "image"
+	Status    string // "pending" | "success" | "failed"
 	CreatedAt time.Time
 }
